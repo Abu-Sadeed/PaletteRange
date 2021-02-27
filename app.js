@@ -11,6 +11,20 @@ const sliderContainers = document.querySelectorAll(".sliders");
 let initialColors;
 
 
+//Event listeners:
+//sliders
+sliders.forEach(slider => {
+	slider.addEventListener('input', hslControls)
+})
+
+//Updating text after customization
+colorDivs.forEach((div, index) => {
+	div.addEventListener('change', () => {
+		updateHexText(index)
+	})
+})
+
+
 //Functions:
 //Get a random hex value
 function generateHex() {
@@ -20,10 +34,14 @@ function generateHex() {
 
 //Select random colors for each color div
 function randomColors() {
+	initialColors = []
 	colorDivs.forEach((div, index) => {
 		//select hex text and get random color
 		const hexText = div.children[0]
 		const randomColor = generateHex()
+
+		//add to array
+		initialColors.push(chroma(randomColor).hex())
 
 		//assign bg and change hex text
 		div.style.backgroundColor = randomColor
@@ -73,6 +91,42 @@ function colorizeSliders(color, hue, brightness, saturation) {
 
 	//Hue is custom as it is constant
 	hue.style.backgroundImage = `linear-gradient(to right, rgb(204,75,75),rgb(204,204,75),rgb(75,204,75),rgb(75,204,204),rgb(75,75,204),rgb(204,75,204),rgb(204,75,75))`;
+}
+
+
+function hslControls(e) {
+	//getting data types for the sliders
+	const index = e.target.getAttribute('data-bright') || e.target.getAttribute('data-hue') || e.target.getAttribute('data-saturation')
+
+	let sliders = e.target.parentElement.querySelectorAll('input[type="range"]')
+	const hue = sliders[0]
+	const brightness = sliders[1]
+	const saturation = sliders[2]
+
+	const bgColor = initialColors[index]
+
+	//Sliders functionality
+	let color = chroma(bgColor)
+		.set('hsl.s', saturation.value)
+		.set('hsl.s', brightness.value)
+		.set('hsl.s', hue.value)
+
+	colorDivs[index].style.backgroundColor = color
+}
+
+function updateHexText(index) {
+	const activeDiv = colorDivs[index]
+	const color = chroma(activeDiv.style.backgroundColor)
+	const textHex = activeDiv.querySelector('h2')
+	const icons = activeDiv.querySelectorAll('.controls button')
+	textHex.innerText = color.hex()
+
+	//Check contrast
+	checkTextContrast(color, textHex)
+
+	for (icon of icons) {
+		checkTextContrast(color, icon)
+	}
 }
 
 randomColors()
