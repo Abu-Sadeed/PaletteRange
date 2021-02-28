@@ -1,14 +1,14 @@
 //Variables:
-const colorDivs = document.querySelectorAll(".color");
-const generateBtn = document.querySelector(".generate");
-const sliders = document.querySelectorAll('input[type="range"]');
-const currentHexes = document.querySelectorAll(".color h2");
-const popup = document.querySelector(".copy-container");
-const adjustButton = document.querySelectorAll(".adjust");
-const lockButton = document.querySelectorAll(".lock");
-const closeAdjustments = document.querySelectorAll(".close-adjustment");
-const sliderContainers = document.querySelectorAll(".sliders");
-let initialColors;
+const colorDivs = document.querySelectorAll(".color")
+const generateBtn = document.querySelector(".generate")
+const sliders = document.querySelectorAll('input[type="range"]')
+const currentHexes = document.querySelectorAll(".color h2")
+const popup = document.querySelector(".copy-container")
+const adjustButton = document.querySelectorAll(".adjust")
+const lockButton = document.querySelectorAll(".lock")
+const closeAdjustments = document.querySelectorAll(".close-adjustment")
+const sliderContainers = document.querySelectorAll(".sliders")
+let initialColors
 
 
 //Event listeners:
@@ -52,10 +52,16 @@ adjustButton.forEach((button, index) => {
 //Close slider
 closeAdjustments.forEach((button, index) => {
 	button.addEventListener("click", () => {
-		closeAdjustmentPanel(index);
+		closeAdjustmentPanel(index)
 	})
 })
 
+//Lock action listeners
+lockButton.forEach((button, index) => {
+	button.addEventListener("click", e => {
+		lockLayer(e, index);
+	})
+})
 
 //Functions:
 //Get a random hex value
@@ -73,7 +79,12 @@ function randomColors() {
 		const randomColor = generateHex()
 
 		//add to array
-		initialColors.push(chroma(randomColor).hex())
+		if (div.classList.contains("locked")) {
+			initialColors.push(hexText.innerText)
+			return
+		} else {
+			initialColors.push(chroma(randomColor).hex())
+		}
 
 		//assign bg and change hex text
 		div.style.backgroundColor = randomColor
@@ -93,6 +104,12 @@ function randomColors() {
 	})
 
 	resetInput()
+
+	//Set better button contrast
+	adjustButton.forEach((button, index) => {
+		checkTextContrast(initialColors[index], button)
+		checkTextContrast(initialColors[index], lockButton[index])
+	});
 }
 
 //Set contrast in bg and hex text
@@ -101,9 +118,9 @@ function checkTextContrast(color, text) {
 	const luminance = chroma(color).luminance()
 
 	if (luminance > 0.5) {
-		text.style.color = "black";
+		text.style.color = "black"
 	} else {
-		text.style.color = "white";
+		text.style.color = "white"
 	}
 
 }
@@ -168,22 +185,22 @@ function updateHexText(index) {
 
 //Fixing the sliders pointer
 function resetInput() {
-	const sliders = document.querySelectorAll(".sliders input");
+	const sliders = document.querySelectorAll(".sliders input")
 	sliders.forEach(slider => {
 		if (slider.name === "hue") {
-			const hueColor = initialColors[slider.getAttribute("data-hue")];
-			const hueValue = chroma(hueColor).hsl()[0];
-			slider.value = Math.floor(hueValue);
+			const hueColor = initialColors[slider.getAttribute("data-hue")]
+			const hueValue = chroma(hueColor).hsl()[0]
+			slider.value = Math.floor(hueValue)
 		}
 		if (slider.name === "brightness") {
-			const brightColor = initialColors[slider.getAttribute("data-bright")];
-			const brightValue = chroma(brightColor).hsl()[2];
-			slider.value = Math.floor(brightValue * 100) / 100;
+			const brightColor = initialColors[slider.getAttribute("data-bright")]
+			const brightValue = chroma(brightColor).hsl()[2]
+			slider.value = Math.floor(brightValue * 100) / 100
 		}
 		if (slider.name === "saturation") {
-			const satColor = initialColors[slider.getAttribute("data-saturation")];
-			const satValue = chroma(satColor).hsl()[1];
-			slider.value = Math.floor(satValue * 100) / 100;
+			const satColor = initialColors[slider.getAttribute("data-saturation")]
+			const satValue = chroma(satColor).hsl()[1]
+			slider.value = Math.floor(satValue * 100) / 100
 		}
 	});
 }
@@ -191,30 +208,45 @@ function resetInput() {
 
 function copyToClipboard(hex) {
 	//Create a text area
-	const el = document.createElement("textarea");
-	el.value = hex.innerText;
-	document.body.appendChild(el);
-	el.select();
+	const el = document.createElement("textarea")
+	el.value = hex.innerText
+	document.body.appendChild(el)
+	el.select()
 
 	//Copy from the text area
-	document.execCommand("copy");
+	document.execCommand("copy")
 
 	//destroy the text area
-	document.body.removeChild(el);
+	document.body.removeChild(el)
 
 	//Pop up animation
-	const popupBox = popup.children[0];
-	popup.classList.add("active");
-	popupBox.classList.add("active");
+	const popupBox = popup.children[0]
+	popup.classList.add("active")
+	popupBox.classList.add("active")
 }
 
 
 //Slider animation functions
 function openAdjustmentPanel(index) {
-	sliderContainers[index].classList.toggle("active");
+	sliderContainers[index].classList.toggle("active")
 }
 
 function closeAdjustmentPanel(index) {
-	sliderContainers[index].classList.remove("active");
+	sliderContainers[index].classList.remove("active")
 }
+
+//lock button
+function lockLayer(e, index) {
+	const lockSVG = e.target.children[0]
+	const activeBg = colorDivs[index]
+	activeBg.classList.toggle("locked")
+
+	if (lockSVG.classList.contains("fa-lock-open")) {
+		e.target.innerHTML = '<i class="fas fa-lock"></i>'
+	} else {
+		e.target.innerHTML = '<i class="fas fa-lock-open"></i>'
+	}
+}
+
+
 randomColors()
