@@ -12,6 +12,9 @@ let initialColors;
 
 
 //Event listeners:
+//Generate new colors
+generateBtn.addEventListener('click', randomColors)
+
 //sliders
 sliders.forEach(slider => {
 	slider.addEventListener('input', hslControls)
@@ -21,6 +24,35 @@ sliders.forEach(slider => {
 colorDivs.forEach((div, index) => {
 	div.addEventListener('change', () => {
 		updateHexText(index)
+	})
+})
+
+// For copying the color name
+currentHexes.forEach(hex => {
+	hex.addEventListener('click', () => {
+		copyToClipboard(hex)
+	})
+})
+
+//Remove the copy popup animation
+popup.addEventListener('transitionend', () => {
+	const popupBox = popup.children[0]
+	popup.classList.remove('active')
+	popupBox.classList.remove('active')
+})
+
+
+//Bring slider animation
+adjustButton.forEach((button, index) => {
+	button.addEventListener('click', () => {
+		openAdjustmentPanel(index)
+	})
+})
+
+//Close slider
+closeAdjustments.forEach((button, index) => {
+	button.addEventListener("click", () => {
+		closeAdjustmentPanel(index);
 	})
 })
 
@@ -79,12 +111,12 @@ function checkTextContrast(color, text) {
 //Changing sliders attributes based on the parent div
 function colorizeSliders(color, hue, brightness, saturation) {
 	//Saturation range
-	const noSaturation = color.set('hsl.s', 0)
-	const fullSaturation = color.set('hsl.s', 1)
+	const noSaturation = color.set("hsl.s", 0)
+	const fullSaturation = color.set("hsl.s", 1)
 	const scaleSaturation = chroma.scale([noSaturation, color, fullSaturation])
 
 	//Brightness range
-	const midBright = color.set('hsl.s', 0.5)
+	const midBright = color.set("hsl.s", 0.5)
 	const scaleBrightness = chroma.scale(['black', midBright, 'white'])
 
 	//Update input colors for sliderContainers
@@ -109,11 +141,14 @@ function hslControls(e) {
 
 	//Sliders functionality
 	let color = chroma(bgColor)
-		.set('hsl.s', saturation.value)
-		.set('hsl.s', brightness.value)
-		.set('hsl.s', hue.value)
+		.set("hsl.s", saturation.value)
+		.set("hsl.l", brightness.value)
+		.set("hsl.h", hue.value)
 
 	colorDivs[index].style.backgroundColor = color
+
+	//Colorize sliders
+	colorizeSliders(color, hue, brightness, saturation)
 }
 
 function updateHexText(index) {
@@ -153,4 +188,33 @@ function resetInput() {
 	});
 }
 
+
+function copyToClipboard(hex) {
+	//Create a text area
+	const el = document.createElement("textarea");
+	el.value = hex.innerText;
+	document.body.appendChild(el);
+	el.select();
+
+	//Copy from the text area
+	document.execCommand("copy");
+
+	//destroy the text area
+	document.body.removeChild(el);
+
+	//Pop up animation
+	const popupBox = popup.children[0];
+	popup.classList.add("active");
+	popupBox.classList.add("active");
+}
+
+
+//Slider animation functions
+function openAdjustmentPanel(index) {
+	sliderContainers[index].classList.toggle("active");
+}
+
+function closeAdjustmentPanel(index) {
+	sliderContainers[index].classList.remove("active");
+}
 randomColors()
